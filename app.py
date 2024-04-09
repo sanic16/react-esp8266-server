@@ -8,11 +8,13 @@ from flask_restful import Api
 from flask_cors import CORS 
 from config import Config
 from extensions import db, jwt
-from models.device import Zone
 
 from resources.user import (UserListResource)
 
 from resources.token import TokenResource, RefreshResource, RevokeResource
+
+from resources.esp8266 import (ZoneListResource, ZoneResource, SubZoneListResource, SubZoneResource,
+                               DeviceListResource, DeviceResource)
 
 from models.token import TokenBlocklist
 
@@ -45,6 +47,15 @@ def register_resources(app):
     api.add_resource(TokenResource, '/api/token')
     api.add_resource(RefreshResource, '/api/refresh')
     api.add_resource(RevokeResource, '/api/revoke')
+
+    api.add_resource(ZoneListResource, '/api/zones')
+    api.add_resource(ZoneResource, '/api/zones/<int:zone_id>')
+
+    api.add_resource(SubZoneListResource, '/api/subzones')
+    api.add_resource(SubZoneResource, '/api/subzones/<int:subzone_id>')
+
+    api.add_resource(DeviceListResource, '/api/devices')
+    api.add_resource(DeviceResource, '/api/devices/<int:device_id>')
 
 app = create_app()
 

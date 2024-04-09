@@ -40,7 +40,16 @@ class User(db.Model):
         )
         return devices
 
-              
+    @classmethod
+    def get_all_zones(cls, user_id):
+        zones = (
+            db.session.query(Zone)
+            .join(User, User.id == Zone.user_id)
+            .filter(User.id  == user_id)
+            .all()
+        )
+        return zones
+
     def save(self):
         db.session.add(self)
         db.session.commit()
