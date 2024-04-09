@@ -1,40 +1,36 @@
-from extensions import db
-from datetime import datetime
-import pytz
+from flask import request
+from flask_restful import Resource
+from http import HTTPStatus
+from models.user import User
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from schemas.user import UserSchema
+from marshmallow import ValidationError
 
-class User(db.Model):
-    __tablename__ = 'user'
-
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), nullable=False, unique=True)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(50), nullable=False, unique=True)
-    password = db.Column(db.String(200))
-    is_active = db.Column(db.Boolean(), default=False)
-    is_admin = db.Column(db.Boolean(), default=False)
-    bio = db.Column(db.Text)
-    created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')))
-    updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')), onupdate=datetime.now(pytz.timezone('America/Guatemala')))
-
-    recipes = db.relationship('Recipe', backref='user')
-
-    @classmethod
-    def get_by_username(cls, username):
-        return cls.query.filter_by(username=username).first()
-    
-    @classmethod
-    def get_by_email(cls, email):
-        return cls.query.filter_by(email=email).first()
-    
-    @classmethod
-    def get_by_id(cls, id):
-        return cls.query.filter_by(id=id).first()
-    
-    
-    
-    def save(self):
-        db.session.add(self)
-        db.session.commit()
+user_schema = UserSchema()
+user_public_schema = UserSchema(exclude=('email', 'is_active'))
 
 
-    
+class UserListResource(Resource):
+    def post(self):
+        json_data = request.get_json()
+
+        try:
+            data = user_schema.load(data= json_data)
+        except ValidationError as error:
+            return {
+                'message': 'Validation error',
+                'errors': error.messages
+            }, HTTPStatus.BAD_REQUEST
+
+        if User.get_by_username(data.get('username')):
+            return {'message': 'username already used'}, HTTPStatus.BAD_REQUEST
+        
+        if User.get_by_email(data.get('email')):
+            return {'message': 'email already used'}, HTTPStatus.BAD_REQUEST
+        
+        
+        user = User(**data) 
+
+        user.save()     
+
+        return user_schema.dump(user), HTTPStatus.CREATED 

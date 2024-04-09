@@ -12,8 +12,6 @@ db = {
 class Config:
     DEBUG = True
 
-    MAX_CONTENT_LENGTH = 1 * 1024 * 1024
-
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{db['user']}:{db['password']}@{db['host']}:{db['port']}/{db['database']}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
