@@ -9,6 +9,7 @@ from marshmallow import ValidationError
 zone_schema = ZoneSchema()
 subZone_schema = SubZoneSchema()
 device_schema = DeviceSchema()
+device_state_schema = DeviceSchema(only=('status',))
 
 class ZoneListResource(Resource):
     @jwt_required()
@@ -253,6 +254,31 @@ class DeviceResource(Resource):
         device.delete()
         
         return {}, HTTPStatus.NO_CONTENT
+    
+    @jwt_required()
+    def post(self, device_id):
+        device = Device.get_by_id(device_id=device_id)
+
+        if device is None:
+            return {'message': 'Device not found'}, HTTPStatus.NOT_FOUND
+        
+        current_user = get_jwt_identity()
+
+        if current_user != device.user_id:
+            return {'message': 'Access is not allowed'}, HTTPStatus.FORBIDDEN
+        
+        json_data = request.get_json()
+
+        try:
+            data = device_state_schema.load(data=json_data)
+        except ValidationError as error:
+            return {'message': 'Validation errors', 'errors': error.messages}, HTTPStatus.BAD_REQUEST
+        
+        device.status = data.get('status')
+        device.save()
+
+        return device_schema.dump(device), HTTPStatus.OK
+
 
 
 

@@ -15,6 +15,10 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), default=False)
     created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')))
     updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')), onupdate=datetime.now(pytz.timezone('America/Guatemala')))
+    zones = db.relationship('Zone', backref = 'user', cascade='all, delete-orphan')
+    subzones = db.relationship('SubZone', backref = 'user', cascade='all, delete-orphan')
+    devices = db.relationship('Device', backref = 'user', cascade='all, delete-orphan')
+
 
     @classmethod
     def get_by_username(cls, username):

@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from schemas.user import UserSchema
 from marshmallow import ValidationError
 
-user_schema = UserSchema()
+user_schema = UserSchema(exclude=('created_at', 'updated_at', 'is_active'))
 user_public_schema = UserSchema(exclude=('email', 'is_active'))
 
 
@@ -33,4 +33,4 @@ class UserListResource(Resource):
 
         user.save()     
 
-        return user_schema.dump(user), HTTPStatus.CREATED 
+        return {}, HTTPStatus.CREATED 

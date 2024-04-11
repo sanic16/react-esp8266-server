@@ -11,7 +11,8 @@ class Zone(db.Model):
     updated_at = db.Column(db.DateTime(), nullable = False, default = datetime.now(pytz.timezone('America/Guatemala')), onupdate = datetime.now(pytz.timezone('America/Guatemala')))
 
     user_id = db.Column(db.Integer(), db.ForeignKey('user.id'), nullable = False)
-    user = db.relationship('User', backref = 'zones')
+    subzones = db.relationship('SubZone', backref = 'zone', cascade='all, delete-orphan')
+
 
     @classmethod
     def get_by_id(cls, zone_id):
@@ -42,9 +43,9 @@ class SubZone(db.Model):
     updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')), onupdate=datetime.now(pytz.timezone('America/Guatemala')))
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
-    user = db.relationship('User', backref = 'subzones')
     zone_id = db.Column(db.Integer, db.ForeignKey('zone.id'), nullable = False)
-    zone = db.relationship('Zone', backref = 'subzones')
+    devices = db.relationship('Device', backref = 'subzone', cascade='all, delete-orphan')
+
 
     @classmethod
     def get_by_id(cls, subzone_id):
@@ -74,11 +75,9 @@ class Device(db.Model):
     created_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')))
     updated_at = db.Column(db.DateTime(), nullable=False, default=datetime.now(pytz.timezone('America/Guatemala')), onupdate=datetime.now(pytz.timezone('America/Guatemala')))
     status = db.Column(db.Boolean(), nullable=False, default=False)
-
+    endpoint = db.Column(db.String(50), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
-    user = db.relationship('User', backref = 'devices')
     subzone_id = db.Column(db.Integer, db.ForeignKey('subzone.id'), nullable = False)
-    subzone = db.relationship('SubZone', backref = 'devices')
 
     @classmethod
     def get_by_id(cls, device_id):
@@ -97,6 +96,6 @@ class Device(db.Model):
         db.session.commit()
 
     def delete(self):
-        db.session.add(self)
+        db.session.delete(self)
         db.session.commit()
 

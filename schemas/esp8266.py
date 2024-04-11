@@ -29,6 +29,7 @@ class DeviceSchema(Schema):
     id = fields.Integer(dump_only=True)
     name = fields.String(required=True)
     status = fields.Boolean(required=True)
+    endpoint = fields.String(required=True)
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
     subzone_id = fields.Integer(required=True)    
