@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import os
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_migrate import Migrate
 from flask_restful import Api
 from flask_cors import CORS 
@@ -19,7 +19,7 @@ from resources.esp8266 import (ZoneListResource, ZoneResource, SubZoneListResour
 from models.token import TokenBlocklist
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='client/assets')
     app.config.from_object(Config)
     register_extensions(app)
     register_resources(app)
@@ -60,6 +60,12 @@ def register_resources(app):
     api.add_resource(DeviceStatusCountResource, '/api/devices/status/count/<int:device_id>')
 
 app = create_app()
+@app.errorhandler(404)
+def not_found(e):
+    return serve()
+@app.route('/')
+def serve():
+    return send_from_directory('client', 'index.html')
 
 if __name__ == '__main__':
     app.run(port=os.environ.get('PORT') or 5000)
