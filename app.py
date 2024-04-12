@@ -57,7 +57,7 @@ def register_resources(app):
     api.add_resource(DeviceListResource, '/api/devices')
     api.add_resource(DeviceResource, '/api/devices/<int:device_id>')
 
-    api.add_resource(DeviceStatusCountResource, '/api/devices/statuscount/<int:device_id>')
+    api.add_resource(DeviceStatusCountResource, '/api/devices/status/count/<int:device_id>')
 
 app = create_app()
 

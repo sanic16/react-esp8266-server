@@ -255,7 +255,31 @@ class DeviceResource(Resource):
         
         return {}, HTTPStatus.NO_CONTENT
     
-    
+    @jwt_required()
+    def post(self, device_id):
+        json_data = request.get_json()
+
+        device = Device.get_by_id(device_id=device_id)
+
+        if device is None:
+            return {'message': 'device not found'}, HTTPStatus.NOT_FOUND
+        
+        try:
+            data = device_state_schema.load(data=json_data)
+        except ValidationError as error:
+            return {'message': 'Validation errors', 'errors': error.messages}, HTTPStatus.BAD_REQUEST
+
+        current_user = get_jwt_identity()
+
+        if current_user != device.user_id:
+            return {'message': 'Access is not allowed'}, HTTPStatus.FORBIDDEN
+                
+        device_status = DeviceStatus(**data)
+        device_status.device_id = device_id
+        device_status.save()
+
+        return device_state_schema.dump(device_status), HTTPStatus.CREATED
+
 #######################################################################################################
 
 class DeviceStatusCountResource(Resource):
@@ -273,7 +297,7 @@ class DeviceStatusCountResource(Resource):
         
         true_count, false_count = DeviceStatus.get_status_counts_by_device(device_id=device_id)
         total = true_count + false_count
-        return {'true_count': true_count, 'false_count': false_count, 'total': total}, HTTPStatus.OK
+        return {'true_count': float(true_count), 'false_count': float(false_count), 'total': float(total)}, HTTPStatus.OK
     
 #######################################################################################################
         
