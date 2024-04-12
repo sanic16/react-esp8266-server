@@ -33,3 +33,11 @@ class DeviceSchema(Schema):
     created_at = fields.DateTime(dump_only=True)
     updated_at = fields.DateTime(dump_only=True)
     subzone_id = fields.Integer(required=True)    
+
+class DeviceStateSchema(Schema):
+    class Meta:
+        ordered = True
+
+    status = fields.Boolean(required=True)
+    is_error = fields.Boolean(required=True)
+    updated_at = fields.DateTime(dump_only=True)

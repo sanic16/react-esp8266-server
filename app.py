@@ -14,7 +14,7 @@ from resources.user import (UserListResource)
 from resources.token import TokenResource, RefreshResource, RevokeResource
 
 from resources.esp8266 import (ZoneListResource, ZoneResource, SubZoneListResource, SubZoneResource,
-                               DeviceListResource, DeviceResource)
+                               DeviceListResource, DeviceResource, DeviceStatusCountResource)
 
 from models.token import TokenBlocklist
 
@@ -56,6 +56,8 @@ def register_resources(app):
 
     api.add_resource(DeviceListResource, '/api/devices')
     api.add_resource(DeviceResource, '/api/devices/<int:device_id>')
+
+    api.add_resource(DeviceStatusCountResource, '/api/devices/statuscount/<int:device_id>')
 
 app = create_app()
 

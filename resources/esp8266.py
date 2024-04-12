@@ -1,15 +1,15 @@
 from flask import request
 from flask_restful import Resource
 from http import HTTPStatus
-from models.device import Zone, SubZone, Device
+from models.device import Zone, SubZone, Device, DeviceStatus
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from schemas.esp8266 import ZoneSchema, SubZoneSchema, DeviceSchema
+from schemas.esp8266 import ZoneSchema, SubZoneSchema, DeviceSchema, DeviceStateSchema
 from marshmallow import ValidationError
 
 zone_schema = ZoneSchema()
 subZone_schema = SubZoneSchema()
 device_schema = DeviceSchema()
-device_state_schema = DeviceSchema(only=('status',))
+device_state_schema = DeviceStateSchema()
 
 class ZoneListResource(Resource):
     @jwt_required()
@@ -255,29 +255,29 @@ class DeviceResource(Resource):
         
         return {}, HTTPStatus.NO_CONTENT
     
+    
+#######################################################################################################
+
+class DeviceStatusCountResource(Resource):
     @jwt_required()
-    def post(self, device_id):
+    def get(self, device_id):
         device = Device.get_by_id(device_id=device_id)
 
         if device is None:
-            return {'message': 'Device not found'}, HTTPStatus.NOT_FOUND
+            return {'message': 'device not found'}, HTTPStatus.NOT_FOUND
         
         current_user = get_jwt_identity()
 
         if current_user != device.user_id:
             return {'message': 'Access is not allowed'}, HTTPStatus.FORBIDDEN
         
-        json_data = request.get_json()
-
-        try:
-            data = device_state_schema.load(data=json_data)
-        except ValidationError as error:
-            return {'message': 'Validation errors', 'errors': error.messages}, HTTPStatus.BAD_REQUEST
+        true_count, false_count = DeviceStatus.get_status_counts_by_device(device_id=device_id)
+        total = true_count + false_count
+        return {'true_count': true_count, 'false_count': false_count, 'total': total}, HTTPStatus.OK
+    
+#######################################################################################################
         
-        device.status = data.get('status')
-        device.save()
-
-        return device_schema.dump(device), HTTPStatus.OK
+        
 
 
 
